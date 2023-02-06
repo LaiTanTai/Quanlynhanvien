@@ -1,6 +1,10 @@
 function getElement(selector){
     return document.querySelector(selector);
 }
+const VND = new Intl.NumberFormat(`vn-VN`, {
+    currency: `VND`,
+    style: 'currency',
+});
 let staffList = [];
 function staff(account,name,email,pw,date,salary,duty,w_time){
     this.account = account;
@@ -14,13 +18,13 @@ function staff(account,name,email,pw,date,salary,duty,w_time){
 }
 staff.prototype.xl = function() {
     if(this.w_time >= 192){
-        return "Nhân viên xuất sắc"
+        return "Xuất sắc"
     }else if(this.w_time >= 176){
-        return "Nhân viên giỏi"
+        return "Giỏi"
     }else if(this.w_time >= 160){
-        return " Nhân viên khá"
+        return "Khá"
     }else{
-        return "Nhân viên trung bình"
+        return "Trung bình"
     }
 }
 staff.prototype.totalSalary = function(){
@@ -46,6 +50,10 @@ function getInfo(){
         staffList.push(newstaff);
     }
 }
+function lockButton(k){
+    getElement("#btnThemNV").disabled = k;
+    getElement("#tknv").disabled = k;
+}
 function printInfo(){
     getInfo();
     let inner = ""
@@ -58,10 +66,10 @@ function printInfo(){
         <td>${newstaff.email}</td>
         <td>${newstaff.date}</td>
         <td>${newstaff.duty}</td>
-        <td>${newstaff.totalSalary()}</td>  
+        <td>${VND.format(newstaff.totalSalary())}</td>  
         <td>${newstaff.xl()}</td>  
         <td>
-        <button class="btn btn-primary" onclick="update('${newstaff.account}')">Cập nhật</button>
+        <button class="btn btn-primary" data-toggle="modal" data-target="#myModal" onclick="update('${newstaff.account}')">Cập nhật</button>
         <button class="btn btn-danger" onclick="deletestaff('${newstaff.account}')">Xóa</button>
         </td>
         </tr>
@@ -69,6 +77,7 @@ function printInfo(){
     }
     document.querySelector("#tableDanhSach").innerHTML = inner;
 }
+// 1
 function rendertable(staffList){
     let inner = ""
     for(let i = 0 ; i < staffList.length;i++){
@@ -80,17 +89,18 @@ function rendertable(staffList){
         <td>${newstaff.email}</td>
         <td>${newstaff.date}</td>
         <td>${newstaff.duty}</td>
-        <td>${newstaff.totalSalary()}</td>  
+        <td>${VND.format(newstaff.totalSalary())}</td>  
         <td>${newstaff.xl()}</td>  
         <td>
-        <button class="btn btn-primary" onclick="update('${newstaff.account}')>Cập nhật </button>
-        <button class="btn btn-danger" onclick="deletestaff('${newstaff.account}')>Xóa</button>
+        <button class="btn btn-primary" data-toggle="modal" data-target="#myModal" onclick="update('${newstaff.account}')">Cập nhật</button>
+        <button class="btn btn-danger" onclick="deletestaff('${newstaff.account}')">Xóa</button>
         </td>
         </tr>
         `
     }
     document.querySelector("#tableDanhSach").innerHTML = inner;
 }
+// 7
 function deletestaff(account){
     staffList = staffList.filter(function(value){
         if(value.account != account){
@@ -99,6 +109,7 @@ function deletestaff(account){
     }, )
     rendertable(staffList);
 }
+// 4
 function validation(account,name,email,pw,date,salary,duty,w_time){
     let isValid = true ;
     if(!account.trim()){
@@ -160,4 +171,41 @@ function validation(account,name,email,pw,date,salary,duty,w_time){
         }
     }
     return isValid;
+}
+function update(accountupdate){
+    lockButton(true);
+    getElement("#btnCapNhat").onclick = function(){
+        let account = getElement("#tknv").value ;
+        let name = getElement("#name").value ;
+        let email = getElement("#email").value ;
+        let pw = getElement("#password").value ;
+        let date = getElement("#datepicker").value ;
+        let salary = +getElement("#luongCB").value ;
+        let duty = getElement("#chucvu").value ;
+        let w_time = +getElement("#gioLam").value ;
+        if(validation(account,name,email,pw,date,salary,duty,w_time) == true ){
+            for(let i = 0 ; i < staffList.length ; i++){
+                if(staffList[i].account == accountupdate){
+                    staffList[i].name = name ;
+                    staffList[i].email = email;
+                    staffList[i].pw = pw;
+                    staffList[i].date = date;
+                    staffList[i].salary = salary;
+                    staffList[i].duty = duty;
+                    staffList[i].w_time = w_time;
+                }
+            }
+            rendertable(staffList)
+        }
+    }        
+}
+function find(){
+    let findinfo = getElement("#searchName").value ;
+    let newstafflist = staffList;
+    newstafflist = newstafflist.filter(function(value) {
+        if(value.xl() == findinfo){
+            return value;
+        }
+    })
+    rendertable(newstafflist);
 }
